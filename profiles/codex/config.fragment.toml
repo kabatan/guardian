@@ -1,0 +1,16 @@
+[features]
+multi_agent = true
+goals = true
+
+[agents.guardian_boundary_reviewer]
+description = "Read-only semantic reviewer for Guardian Base Spec, Plan, MECH, closure, source-fidelity, and recovery boundaries."
+config_file = "agents/guardian_boundary_reviewer.toml"
+
+[agents.spec_verifier]
+description = "Read-only reviewer that checks whether changed files satisfy assigned R-IDs and approved requirements."
+config_file = "agents/spec_verifier.toml"
+
+[agents.quality_reviewer]
+description = "Read-only reviewer that checks implementation quality, correctness risks, regressions, and test adequacy after spec review passes."
+config_file = "agents/quality_reviewer.toml"
+
