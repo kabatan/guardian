@@ -1,244 +1,278 @@
 #!/usr/bin/env python3
-"""Install Codex Guardian into a Codex home directory."""
+"""Install guardian into a Codex home directory."""
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import platform
-import re
-import shutil
 import subprocess
-from datetime import datetime
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
+
+from guardian_common import (
+    AGENT_NAMES,
+    BEGIN,
+    END,
+    BackupManager,
+    GuardianError,
+    InvalidStateError,
+    copy_path,
+    is_link_like,
+    load_state,
+    managed_targets,
+    marker_path,
+    path_exists,
+    previous_feature_values,
+    read_version,
+    remove_existing,
+    render_config_update,
+    repo_root,
+    state_path,
+    target_matches_source,
+    valid_marker,
+    write_marker,
+    write_state,
+)
 
 
-AGENT_NAMES = [
-    "guardian_boundary_reviewer",
-    "spec_verifier",
-    "quality_reviewer",
-]
-
-SKILL_NAMES = [
-    "using-spec-guardian",
-    "base-spec-gate",
-    "plan-contract",
-    "goal-guardian-execution",
-    "closure-recovery",
-    "guardian-session-handoff",
-]
-
-BEGIN = "<!-- BEGIN CODEX-GUARDIAN -->"
-END = "<!-- END CODEX-GUARDIAN -->"
-
-
-def repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
-def backup(path: Path) -> None:
-    if not path.exists():
-        return
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    backup_path = path.with_name(f"{path.name}.bak-{stamp}")
-    if path.is_dir() and not path.is_symlink():
-        shutil.copytree(path, backup_path)
+def classify_target(item: dict[str, Any], force: bool, install_mode: str) -> tuple[str, bool]:
+    source = item["source"]
+    target = item["target"]
+    target_mode = item["mode"]
+    exists = path_exists(target)
+    marker = valid_marker(target, item["kind"], item["name"], source)
+    exact = target_matches_source(source, target)
+    if target_mode == "file":
+        mode_ok = True
+    elif install_mode == "copy":
+        mode_ok = not is_link_like(target)
     else:
-        shutil.copy2(path, backup_path)
+        mode_ok = is_link_like(target)
+    needs_replace = exists and (not exact or not mode_ok)
+
+    if not exists:
+        return "create", False
+    if marker:
+        return ("replace-managed" if needs_replace else "refresh-managed"), needs_replace
+    if exact and mode_ok:
+        return "adopt-legacy", False
+    if force:
+        return "force-replace-unmanaged", True
+    return "conflict", False
 
 
-def remove_existing(path: Path) -> None:
-    if not path.exists() and not path.is_symlink():
+def install_directory(source: Path, target: Path, install_mode: str) -> None:
+    if install_mode == "link":
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if platform.system() == "Windows":
+            subprocess.run(["cmd", "/c", "mklink", "/J", str(target), str(source)], check=True)
+        else:
+            target.symlink_to(source, target_is_directory=True)
         return
-    if path.is_symlink() or path.is_file():
-        path.unlink()
-        return
-    shutil.rmtree(path)
+    copy_path(source, target)
 
 
-def link_dir(source: Path, target: Path) -> None:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    remove_existing(target)
-    if platform.system() == "Windows":
-        subprocess.run(["cmd", "/c", "mklink", "/J", str(target), str(source)], check=True)
-    else:
-        target.symlink_to(source, target_is_directory=True)
+def install_target(item: dict[str, Any], action: str, needs_replace: bool, backup: BackupManager, install_mode: str, dry_run: bool) -> dict[str, str]:
+    source = item["source"]
+    target = item["target"]
+    kind = item["kind"]
+    mode = item["mode"]
+
+    if dry_run:
+        print(f"Will {action}: {target}")
+        if needs_replace:
+            print(f"Will back up: {target} -> {backup.session_dir / backup.relative_backup_path(target)}")
+        return {"kind": kind, "path": str(target), "marker": str(marker_path(target)), "source": str(source)}
+
+    if needs_replace:
+        backed_up = backup.backup(target)
+        if backed_up:
+            print(f"backed up {target} -> {backed_up}")
+        remove_existing(target)
+
+    if action in {"create", "replace-managed", "force-replace-unmanaged"} or needs_replace:
+        if mode == "dir":
+            install_directory(source, target, install_mode)
+        else:
+            copy_path(source, target)
+
+    write_marker(target, kind, item["name"], source)
+    print(f"{action}: {target}")
+    return {"kind": kind, "path": str(target), "marker": str(marker_path(target)), "source": str(source)}
 
 
-def copy_dir(source: Path, target: Path) -> None:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    remove_existing(target)
-    shutil.copytree(source, target)
-
-
-def install_dir(source: Path, target: Path, mode: str) -> None:
-    if mode == "link":
-        link_dir(source, target)
-    else:
-        copy_dir(source, target)
-
-
-def install_file(source: Path, target: Path) -> None:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if target.exists() and source.read_bytes() != target.read_bytes():
-        backup(target)
-    shutil.copy2(source, target)
-
-
-def install_agents_md(source: Path, target: Path, mode: str) -> None:
-    content = source.read_text(encoding="utf-8").rstrip() + "\n"
-    target.parent.mkdir(parents=True, exist_ok=True)
-
+def install_agents_md(source: Path, target: Path, mode: str, backup: BackupManager, dry_run: bool) -> bool:
     if mode == "skip":
-        return
+        print("Skipping AGENTS.md update.")
+        return False
 
-    if mode == "replace":
-        if target.exists() and target.read_text(encoding="utf-8", errors="replace") != content:
-            backup(target)
-        target.write_text(content, encoding="utf-8")
-        return
-
+    content = source.read_text(encoding="utf-8").rstrip() + "\n"
     managed = f"{BEGIN}\n{content}{END}\n"
     existing = target.read_text(encoding="utf-8", errors="replace") if target.exists() else ""
-    pattern = re.compile(rf"{re.escape(BEGIN)}.*?{re.escape(END)}\n?", re.S)
-    if pattern.search(existing):
-        updated = pattern.sub(managed, existing)
-    elif existing.strip():
-        updated = existing.rstrip() + "\n\n" + managed
-    else:
+
+    if mode == "replace":
         updated = managed
+    else:
+        import re
 
-    if target.exists() and existing != updated:
-        backup(target)
+        pattern = re.compile(rf"{re.escape(BEGIN)}.*?{re.escape(END)}\n?", re.S)
+        if pattern.search(existing):
+            updated = pattern.sub(managed, existing)
+        elif existing.strip():
+            updated = existing.rstrip() + "\n\n" + managed
+        else:
+            updated = managed
+
+    if existing == updated:
+        print(f"unchanged {target}")
+        return False
+
+    if dry_run:
+        print(f"Will modify: {target}")
+        if target.exists():
+            print(f"Will back up: {target} -> {backup.session_dir / backup.relative_backup_path(target)}")
+        return True
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        backed_up = backup.backup(target)
+        if backed_up:
+            print(f"backed up {target} -> {backed_up}")
     target.write_text(updated, encoding="utf-8")
+    print(f"updated {target}")
+    return True
 
 
-def strip_section(lines: list[str], header: str) -> list[str]:
-    result: list[str] = []
-    i = 0
-    target = f"[{header}]"
-    while i < len(lines):
-        if lines[i].strip() == target:
-            i += 1
-            while i < len(lines) and not re.match(r"\s*\[.+\]\s*$", lines[i]):
-                i += 1
-            continue
-        result.append(lines[i])
-        i += 1
-    return result
+def update_config(path: Path, include_agents: bool, backup: BackupManager, dry_run: bool) -> tuple[bool, dict[str, Any | None]]:
+    previous = previous_feature_values(path)
+    original = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+    updated = render_config_update(original, include_agents)
+    if original == updated:
+        print(f"unchanged {path}")
+        return False, previous
 
+    if dry_run:
+        print(f"Will modify: {path}")
+        if path.exists():
+            print(f"Will back up: {path} -> {backup.session_dir / backup.relative_backup_path(path)}")
+        return True, previous
 
-def find_section(lines: list[str], section: str) -> tuple[int, int] | None:
-    header = f"[{section}]"
-    start = None
-    for idx, line in enumerate(lines):
-        if line.strip() == header:
-            start = idx
-            break
-    if start is None:
-        return None
-    end = len(lines)
-    for idx in range(start + 1, len(lines)):
-        if re.match(r"\s*\[.+\]\s*$", lines[idx]):
-            end = idx
-            break
-    return start, end
-
-
-def set_key(lines: list[str], section: str, key: str, value: str) -> list[str]:
-    found = find_section(lines, section)
-    if found is None:
-        if lines and lines[-1].strip():
-            lines.append("")
-        lines.extend([f"[{section}]", f"{key} = {value}"])
-        return lines
-
-    start, end = found
-    key_re = re.compile(rf"\s*{re.escape(key)}\s*=")
-    new_section = [lines[start]]
-    wrote = False
-    for line in lines[start + 1 : end]:
-        if key_re.match(line):
-            if not wrote:
-                new_section.append(f"{key} = {value}")
-                wrote = True
-            continue
-        new_section.append(line)
-    if not wrote:
-        new_section.append(f"{key} = {value}")
-    return lines[:start] + new_section + lines[end:]
-
-
-def update_config(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    text = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
-    lines = text.splitlines()
-
-    for name in AGENT_NAMES:
-        lines = strip_section(lines, f"agents.{name}")
-
-    lines = set_key(lines, "features", "multi_agent", "true")
-    lines = set_key(lines, "features", "goals", "true")
-
-    if lines and lines[-1].strip():
-        lines.append("")
-
-    agent_blocks = {
-        "guardian_boundary_reviewer": [
-            '[agents.guardian_boundary_reviewer]',
-            'description = "Read-only semantic reviewer for Guardian Base Spec, Plan, MECH, closure, source-fidelity, and recovery boundaries."',
-            'config_file = "agents/guardian_boundary_reviewer.toml"',
-        ],
-        "spec_verifier": [
-            '[agents.spec_verifier]',
-            'description = "Read-only reviewer that checks whether changed files satisfy assigned R-IDs and approved requirements."',
-            'config_file = "agents/spec_verifier.toml"',
-        ],
-        "quality_reviewer": [
-            '[agents.quality_reviewer]',
-            'description = "Read-only reviewer that checks implementation quality, correctness risks, regressions, and test adequacy after spec review passes."',
-            'config_file = "agents/quality_reviewer.toml"',
-        ],
-    }
-
-    for name in AGENT_NAMES:
-        lines.extend(agent_blocks[name])
-        lines.append("")
-
-    updated = "\n".join(lines).rstrip() + "\n"
-    if path.exists() and text != updated:
-        backup(path)
+    if path.exists():
+        backed_up = backup.backup(path)
+        if backed_up:
+            print(f"backed up {path} -> {backed_up}")
     path.write_text(updated, encoding="utf-8")
+    print(f"updated {path}")
+    return True, previous
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")))
     parser.add_argument("--agents-home", type=Path, default=Path(os.environ.get("AGENTS_HOME", Path.home() / ".agents")))
-    parser.add_argument("--install-mode", choices=["link", "copy"], default="link")
+    parser.add_argument("--install-mode", choices=["link", "copy"], default="copy")
     parser.add_argument("--agents-mode", choices=["replace", "merge", "skip"], default="merge")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--backup-dir", type=Path)
+    parser.add_argument("--no-config", action="store_true")
+    parser.add_argument("--no-agents", action="store_true")
+    parser.add_argument("--no-skills", action="store_true")
+    parser.add_argument("--version", action="store_true")
     args = parser.parse_args()
+
+    version = read_version()
+    if args.version:
+        print(f"guardian {version}")
+        return 0
 
     root = repo_root()
     codex_home = args.codex_home.expanduser()
     agents_home = args.agents_home.expanduser()
+    backup = BackupManager(codex_home, agents_home, args.backup_dir, args.dry_run)
+    try:
+        existing_state = load_state(codex_home)
+    except (json.JSONDecodeError, InvalidStateError, OSError, UnicodeDecodeError) as exc:
+        print(f"ERROR: guardian state is invalid: {exc}", file=sys.stderr)
+        return 1
 
-    for skill in SKILL_NAMES:
-        install_dir(root / "skills" / skill, agents_home / "skills" / skill, args.install_mode)
+    if args.dry_run:
+        print("guardian install dry run")
 
-    install_dir(root / "templates" / "guardian", agents_home / "templates" / "guardian", args.install_mode)
+    include_skills = not args.no_skills
+    include_agents = not args.no_agents
+    targets = managed_targets(root, codex_home, agents_home, include_skills, include_agents)
 
-    for name in AGENT_NAMES:
-        install_file(root / "agents" / f"{name}.toml", codex_home / "agents" / f"{name}.toml")
+    planned: list[tuple[dict[str, Any], str, bool]] = []
+    conflicts: list[Path] = []
+    for item in targets:
+        action, needs_replace = classify_target(item, args.force, args.install_mode)
+        if action == "conflict":
+            conflicts.append(item["target"])
+        planned.append((item, action, needs_replace))
 
-    install_agents_md(root / "profiles" / "codex" / "AGENTS.md", codex_home / "AGENTS.md", args.agents_mode)
-    update_config(codex_home / "config.toml")
+    if conflicts:
+        for target in conflicts:
+            print(
+                f"ERROR: {target} already exists and is not managed by guardian. "
+                "Please remove it manually, rename it, or rerun with --force after reviewing the conflict.",
+                file=sys.stderr,
+            )
+        return 1
 
-    print(f"Installed Codex Guardian into {codex_home} and {agents_home}.")
+    state: dict[str, Any] = {
+        "installed_at": datetime.now(timezone.utc).isoformat(),
+        "version": version,
+        "codex_home": str(codex_home),
+        "agents_home": str(agents_home),
+        "backup_dir": str(backup.session_dir),
+        "managed_paths": [],
+        "modified_files": [],
+        "previous_config_values": (
+            existing_state["previous_config_values"]
+            if existing_state and isinstance(existing_state.get("previous_config_values"), dict)
+            else {}
+        ),
+        "agents_mode": args.agents_mode,
+        "install_mode": args.install_mode,
+    }
+
+    try:
+        for item, action, needs_replace in planned:
+            state["managed_paths"].append(install_target(item, action, needs_replace, backup, args.install_mode, args.dry_run))
+
+        agents_changed = install_agents_md(root / "profiles" / "codex" / "AGENTS.md", codex_home / "AGENTS.md", args.agents_mode, backup, args.dry_run)
+        if agents_changed:
+            state["modified_files"].append(str(codex_home / "AGENTS.md"))
+
+        if not args.no_config:
+            config_changed, previous = update_config(codex_home / "config.toml", include_agents, backup, args.dry_run)
+            if not state["previous_config_values"]:
+                state["previous_config_values"] = previous
+            if config_changed:
+                state["modified_files"].append(str(codex_home / "config.toml"))
+        else:
+            print("Skipping config.toml update.")
+
+        if args.dry_run:
+            print("Dry run complete. No files were modified.")
+            return 0
+
+        backup.ensure_session()
+        write_state(codex_home, state)
+    except (OSError, subprocess.CalledProcessError, GuardianError) as exc:
+        print(f"ERROR: install failed: {exc}", file=sys.stderr)
+        return 1
+
+    print(f"Installed guardian into {codex_home} and {agents_home}.")
     print("Restart Codex, then run scripts/doctor.py.")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

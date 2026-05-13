@@ -1,0 +1,21 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m unittest discover -s tests
+      - run: |
+          tmp_home="$(mktemp -d)"
+          python scripts/install.py --codex-home "$tmp_home/.codex" --agents-home "$tmp_home/.agents" --agents-mode merge --install-mode copy
+          python scripts/doctor.py --codex-home "$tmp_home/.codex" --agents-home "$tmp_home/.agents"
+          python scripts/uninstall.py --codex-home "$tmp_home/.codex" --agents-home "$tmp_home/.agents" --restore-config
