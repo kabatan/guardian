@@ -13,6 +13,16 @@ def read_repo(path: str) -> str:
 
 
 class DistributionDocsTests(unittest.TestCase):
+    def test_release_version_is_current(self) -> None:
+        readme = read_repo("README.md")
+        release_notes = read_repo("RELEASE_NOTES.md")
+        version = read_repo("VERSION")
+
+        self.assertEqual(version.strip(), "0.1.1")
+        self.assertIn("guardian v0.1.1", release_notes)
+        self.assertIn("--branch v0.1.1", readme)
+        self.assertIn("--branch v0.1.1", release_notes)
+
     def test_install_examples_use_canonical_repo_url(self) -> None:
         readme = read_repo("README.md")
         release_notes = read_repo("RELEASE_NOTES.md")
@@ -22,7 +32,7 @@ class DistributionDocsTests(unittest.TestCase):
         self.assertNotIn("https://github.com/kabatan/codex-guardian.git", readme)
         self.assertNotIn("https://github.com/kabatan/codex-guardian.git", release_notes)
 
-    def test_update_example_uses_placeholder_version(self) -> None:
+    def test_update_example_does_not_reference_old_unpublished_example(self) -> None:
         readme = read_repo("README.md")
 
         self.assertNotIn("git checkout v0.1.1", readme)
@@ -107,6 +117,8 @@ class DistributionDocsTests(unittest.TestCase):
         self.assertIn("os:", workflow)
         self.assertIn("python-version:", workflow)
         self.assertIn("runs-on: ${{ matrix.os }}", workflow)
+        self.assertIn("actions/checkout@v6.0.2", workflow)
+        self.assertIn("actions/setup-python@v6.2.0", workflow)
 
 
 if __name__ == "__main__":

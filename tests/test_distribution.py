@@ -78,11 +78,11 @@ class DistributionTests(unittest.TestCase):
         state_path = self.codex_home / "guardian-state.json"
         self.assertTrue(state_path.exists())
         state = json.loads(state_path.read_text(encoding="utf-8"))
-        self.assertEqual(state["version"], "0.1.0")
+        self.assertEqual(state["version"], "0.1.1")
         self.assertTrue(Path(state["backup_dir"]).exists())
 
         doctor = self.run_script(DOCTOR)
-        self.assertIn("PASS version v0.1.0", doctor.stdout)
+        self.assertIn("PASS version v0.1.1", doctor.stdout)
 
     def test_install_is_idempotent(self) -> None:
         self.install()

@@ -31,7 +31,7 @@ plugins, history, or local evidence.
 Use a tagged release for normal installation:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/kabatan/guardian.git ~/.codex/guardian
+git clone --branch v0.1.1 https://github.com/kabatan/guardian.git ~/.codex/guardian
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy --dry-run
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy
 python ~/.codex/guardian/scripts/doctor.py
@@ -42,7 +42,7 @@ Restart Codex after installation.
 On Windows PowerShell, use:
 
 ```powershell
-git clone --branch v0.1.0 https://github.com/kabatan/guardian.git "$env:USERPROFILE\.codex\guardian"
+git clone --branch v0.1.1 https://github.com/kabatan/guardian.git "$env:USERPROFILE\.codex\guardian"
 python "$env:USERPROFILE\.codex\guardian\scripts\install.py" --agents-mode merge --install-mode copy --dry-run
 python "$env:USERPROFILE\.codex\guardian\scripts\install.py" --agents-mode merge --install-mode copy
 python "$env:USERPROFILE\.codex\guardian\scripts\doctor.py"
@@ -228,7 +228,7 @@ Default Lane remains available for narrow routine work with scoped claims.
 Use tag pinning for normal installs:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/kabatan/guardian.git ~/.codex/guardian
+git clone --branch v0.1.1 https://github.com/kabatan/guardian.git ~/.codex/guardian
 ```
 
 Before installing or updating, run the installer with `--dry-run` and review the paths listed in

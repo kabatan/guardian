@@ -1,24 +1,21 @@
-# guardian v0.1.0
+# guardian v0.1.1
 
-Initial public alpha release of guardian, a Guardian-style Codex profile pack for
-spec-driven planning, execution, review, and handoff.
+Follow-up public alpha release aligning the latest release with the improved `main`
+distribution docs, CI matrix, and safe install guidance.
 
 ## Highlights
 
-- Installs Guardian Lane skills, review agents, and artifact templates.
-- Recommends `--agents-mode merge --install-mode copy` for safer first-time installs.
-- Adds managed markers and conflict detection so unmanaged same-name files are preserved.
-- Adds centralized timestamped backups under `~/.codex/guardian-backups/`.
-- Records install state in `~/.codex/guardian-state.json`.
-- Adds `--dry-run`, `--force`, `--backup-dir`, `--no-config`, `--no-agents`, `--no-skills`, and `--version` to the installer.
-- Adds uninstall dry runs and `--restore-config`.
-- Expands `doctor.py` to check installed paths, markers, symlinks, Guardian `AGENTS.md`, config, state, version, and backups.
-- Adds unit tests and a GitHub Actions workflow.
+- Uses the canonical public repository URL `https://github.com/kabatan/guardian.git`.
+- Puts installer `--dry-run` before the mutating install command.
+- Adds the Guardian minimal usage example and glossary.
+- Expands compatibility, model-access, release-trust, and security reporting guidance.
+- Expands CI to Ubuntu, macOS, and Windows across Python 3.9, 3.10, 3.11, and 3.12.
+- Updates GitHub Actions to `actions/checkout@v6.0.2` and `actions/setup-python@v6.2.0`.
 
 ## Install
 
 ```bash
-git clone --branch v0.1.0 https://github.com/kabatan/guardian.git ~/.codex/guardian
+git clone --branch v0.1.1 https://github.com/kabatan/guardian.git ~/.codex/guardian
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy --dry-run
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy
 python ~/.codex/guardian/scripts/doctor.py

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.1.1
 
 - Clarifies the canonical public repository URL in install documentation.
 - Puts dry-run before mutating install and update commands.
@@ -8,6 +8,7 @@
 - Expands compatibility, model-access, and release-trust notes.
 - Strengthens security reporting guidance without publishing a contact address or PGP key.
 - Expands CI coverage to an OS and Python version matrix.
+- Updates GitHub Actions to `actions/checkout@v6.0.2` and `actions/setup-python@v6.2.0`.
 
 ## v0.1.0
 
