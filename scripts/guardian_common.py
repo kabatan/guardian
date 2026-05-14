@@ -7,7 +7,7 @@ import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Tuple
 
 try:
     import tomllib
@@ -95,7 +95,7 @@ def remove_marker(target: Path, dry_run: bool = False) -> None:
             marker.unlink()
 
 
-def load_marker(target: Path) -> dict[str, Any] | None:
+def load_marker(target: Path) -> Optional[dict[str, Any]]:
     marker = marker_path(target)
     if not marker.exists():
         return None
@@ -187,7 +187,7 @@ def state_path(codex_home: Path) -> Path:
     return codex_home / STATE_NAME
 
 
-def load_state(codex_home: Path) -> dict[str, Any] | None:
+def load_state(codex_home: Path) -> Optional[dict[str, Any]]:
     path = state_path(codex_home)
     if not path.exists():
         return None
@@ -241,7 +241,7 @@ def managed_targets(root: Path, codex_home: Path, agents_home: Path, include_ski
 
 
 class BackupManager:
-    def __init__(self, codex_home: Path, agents_home: Path, backup_dir: Path | None, dry_run: bool) -> None:
+    def __init__(self, codex_home: Path, agents_home: Path, backup_dir: Optional[Path], dry_run: bool) -> None:
         root = backup_dir.expanduser() if backup_dir else codex_home / "guardian-backups"
         self.root = root
         self.session_dir = root / datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -265,7 +265,7 @@ class BackupManager:
         safe = [part.replace(":", "") for part in path.parts if part not in (path.anchor, "\\", "/")]
         return Path("other").joinpath(*safe)
 
-    def backup(self, path: Path) -> Path | None:
+    def backup(self, path: Path) -> Optional[Path]:
         if not path_exists(path):
             return None
         dest = self.session_dir / self.relative_backup_path(path)
@@ -303,7 +303,7 @@ def strip_section(lines: list[str], header: str) -> list[str]:
     return result
 
 
-def find_section(lines: list[str], section: str) -> tuple[int, int] | None:
+def find_section(lines: list[str], section: str) -> Optional[Tuple[int, int]]:
     header = f"[{section}]"
     start = None
     for idx, line in enumerate(lines):
@@ -363,8 +363,8 @@ def remove_key(lines: list[str], section: str, key: str) -> list[str]:
     return lines[:start] + new_section + lines[end:]
 
 
-def previous_feature_values(config_path: Path) -> dict[str, Any | None]:
-    values: dict[str, Any | None] = {
+def previous_feature_values(config_path: Path) -> dict[str, Optional[Any]]:
+    values: dict[str, Optional[Any]] = {
         "features.multi_agent": None,
         "features.goals": None,
     }
@@ -421,7 +421,7 @@ def render_config_update(original: str, include_agents: bool) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def render_config_uninstall(original: str, restore_values: dict[str, Any | None] | None) -> str:
+def render_config_uninstall(original: str, restore_values: Optional[dict[str, Optional[Any]]]) -> str:
     lines = original.splitlines()
     for name in AGENT_NAMES:
         lines = strip_section(lines, f"agents.{name}")

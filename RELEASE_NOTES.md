@@ -18,9 +18,10 @@ spec-driven planning, execution, review, and handoff.
 ## Install
 
 ```bash
-git clone --branch v0.1.0 https://github.com/kabatan/codex-guardian.git ~/.codex/guardian
+git clone --branch v0.1.0 https://github.com/kabatan/guardian.git ~/.codex/guardian
+python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy --dry-run
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy
 python ~/.codex/guardian/scripts/doctor.py
 ```
 
-Run `python ~/.codex/guardian/scripts/install.py --dry-run` first if you want to preview changes.
+Run the `--dry-run` command first to preview changes before installing.

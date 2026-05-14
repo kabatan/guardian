@@ -8,6 +8,12 @@ Use GitHub private vulnerability reporting if it is enabled for the repository.
 If a private channel is not available, open a minimal public issue asking for a secure
 contact path and do not include exploit details in the issue.
 
+No project security email address is currently published.
+No project PGP key is currently published.
+
+Do not include secrets, exploit steps, private local paths, personal Codex configuration, or
+other sensitive details in a public issue.
+
 ## Scope
 
 Security-sensitive areas include:

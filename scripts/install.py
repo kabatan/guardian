@@ -11,7 +11,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Tuple
 
 from guardian_common import (
     AGENT_NAMES,
@@ -147,7 +147,7 @@ def install_agents_md(source: Path, target: Path, mode: str, backup: BackupManag
     return True
 
 
-def update_config(path: Path, include_agents: bool, backup: BackupManager, dry_run: bool) -> tuple[bool, dict[str, Any | None]]:
+def update_config(path: Path, include_agents: bool, backup: BackupManager, dry_run: bool) -> Tuple[bool, dict[str, Optional[Any]]]:
     previous = previous_feature_values(path)
     original = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
     updated = render_config_update(original, include_agents)

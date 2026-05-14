@@ -9,7 +9,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from guardian_common import (
     BEGIN,
@@ -73,7 +73,7 @@ def update_agents_md(path: Path, backup: BackupManager, dry_run: bool) -> bool:
     return True
 
 
-def update_config(path: Path, backup: BackupManager, restore_values: dict[str, Any | None] | None, dry_run: bool) -> bool:
+def update_config(path: Path, backup: BackupManager, restore_values: Optional[dict[str, Optional[Any]]], dry_run: bool) -> bool:
     if not path.exists():
         return False
     original = path.read_text(encoding="utf-8", errors="replace")

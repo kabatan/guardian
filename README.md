@@ -8,6 +8,7 @@ and required Guardian Codex config entries. It is designed to be inspectable, re
 and safe to test with `--dry-run` before changing your local Codex environment.
 
 Use a tagged release for normal installation. The `main` branch may contain unreleased changes.
+The canonical public repository URL is `https://github.com/kabatan/guardian`.
 
 ## What guardian installs
 
@@ -30,7 +31,8 @@ plugins, history, or local evidence.
 Use a tagged release for normal installation:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/kabatan/codex-guardian.git ~/.codex/guardian
+git clone --branch v0.1.0 https://github.com/kabatan/guardian.git ~/.codex/guardian
+python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy --dry-run
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy
 python ~/.codex/guardian/scripts/doctor.py
 ```
@@ -40,7 +42,8 @@ Restart Codex after installation.
 On Windows PowerShell, use:
 
 ```powershell
-git clone --branch v0.1.0 https://github.com/kabatan/codex-guardian.git "$env:USERPROFILE\.codex\guardian"
+git clone --branch v0.1.0 https://github.com/kabatan/guardian.git "$env:USERPROFILE\.codex\guardian"
+python "$env:USERPROFILE\.codex\guardian\scripts\install.py" --agents-mode merge --install-mode copy --dry-run
 python "$env:USERPROFILE\.codex\guardian\scripts\install.py" --agents-mode merge --install-mode copy
 python "$env:USERPROFILE\.codex\guardian\scripts\doctor.py"
 ```
@@ -50,7 +53,7 @@ For most users, `merge` and `copy` are recommended:
 - `--agents-mode merge` preserves existing global Codex instructions and appends a marked Guardian block.
 - `--install-mode copy` keeps the installed runtime files independent from later edits in the cloned repo.
 
-Preview the install without changing files:
+Run the dry run first to preview the install without changing files:
 
 ```bash
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy --dry-run
@@ -116,7 +119,8 @@ If you installed from a tagged release, update by checking out a newer release a
 ```bash
 cd ~/.codex/guardian
 git fetch --tags
-git checkout v0.1.1
+git checkout <new-version>
+python scripts/install.py --agents-mode merge --install-mode copy --dry-run
 python scripts/install.py --agents-mode merge --install-mode copy
 python scripts/doctor.py
 ```
@@ -168,15 +172,40 @@ directory.
 - Python 3.11+ uses built-in TOML parsing
 - Python 3.9 or 3.10 requires `tomli` for TOML parsing
 - Git
+- Access to the configured reviewer model names in `agents/*.toml`, or a Codex runtime fallback
+  that can run equivalent reviewer agents
 
 Tested on:
 
-- macOS: TBD
-- Linux: CI on Ubuntu with Python 3.11
-- Windows / WSL: local script and unit-test development on Windows
+- Linux: GitHub Actions workflow covers Ubuntu across Python 3.9, 3.10, 3.11, and 3.12 after the workflow is run.
+- macOS: GitHub Actions workflow covers macOS across Python 3.9, 3.10, 3.11, and 3.12 after the workflow is run.
+- Windows: GitHub Actions workflow covers Windows across Python 3.9, 3.10, 3.11, and 3.12 after the workflow is run; local script and unit-test development also happens on Windows.
 
-Reviewer agent registration depends on the Codex runtime. If a current session does not expose
-newly installed custom agents, restart Codex and run `doctor.py` again.
+Compatibility notes:
+
+- Codex runtime support for skills and custom agents is required. TOML files alone do not prove
+  reviewer agent runtime availability.
+- Reviewer agent registration depends on the Codex runtime. If a current session does not expose
+  newly installed custom agents, restart Codex and run `doctor.py` again.
+- Reviewer model access depends on your Codex account and configured runtime. If a configured reviewer
+  model is unavailable, use a Codex-supported fallback model or edit the local agent TOML files
+  before reinstalling.
+- Known limitations: GitHub Actions improves OS and Python coverage, but it does not certify every
+  Codex runtime, model entitlement, shell, filesystem, symlink, WSL, or local permission setup.
+
+## Minimal Example
+
+After installing guardian, ask Codex to use Guardian Lane for work that needs a spec, review, or
+strong completion claim. A minimal flow is:
+
+1. "Use Guardian Lane for this change. First create a Base Spec from my requirements."
+2. Review the Base Spec and answer any blocking questions.
+3. Ask Codex to create a Plan against the approved R-IDs and review checkpoints.
+4. Approve the Plan, then let Codex implement only the admitted items.
+5. Run the Guardian reviewers at the required checkpoints.
+6. Close with a CLOSURE report that cites fresh verification evidence.
+
+See [docs/glossary.md](docs/glossary.md) for the Guardian terms used in this flow.
 
 ## Guardian Lane
 
@@ -193,6 +222,21 @@ The core flow is:
 5. Make only claims supported by exact evidence.
 
 Default Lane remains available for narrow routine work with scoped claims.
+
+## Release Trust And Verification
+
+Use tag pinning for normal installs:
+
+```bash
+git clone --branch v0.1.0 https://github.com/kabatan/guardian.git ~/.codex/guardian
+```
+
+Before installing or updating, run the installer with `--dry-run` and review the paths listed in
+the output. guardian may modify only the files listed in "What guardian installs", and it records
+backups under `~/.codex/guardian-backups/` for rollback.
+
+Current releases do not publish a signed tag guarantee or checksum file. Verify the GitHub release,
+tag, and commit according to your own trust requirements before installing.
 
 ## Disclaimer
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Clarifies the canonical public repository URL in install documentation.
+- Puts dry-run before mutating install and update commands.
+- Adds a minimal Guardian usage example and glossary.
+- Expands compatibility, model-access, and release-trust notes.
+- Strengthens security reporting guidance without publishing a contact address or PGP key.
+- Expands CI coverage to an OS and Python version matrix.
+
 ## v0.1.0
 
 Initial public alpha release of guardian.
