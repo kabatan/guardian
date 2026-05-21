@@ -13,5 +13,6 @@ Base Spec must include purpose, source scope, requirements, adaptations, exclusi
 
 Before approval, provide an Approval Packet covering QUESTION, ADAPTED, PARTIAL, OUT_OF_SCOPE, high-risk EXACT, MECH-required items, objections, conversion risks, and explicit decisions.
 
-Use `guardian_boundary_reviewer` for dense, workflow-heavy, API/data/security/UI/algorithmic, or 5+ R-ID source conversion. If unavailable, record the blocker and narrow any claim.
+Base Spec approval is not implementation permission. After Plan admission, ask the user explicitly before coding or editing implementation files.
 
+Use `guardian_boundary_reviewer` for dense, workflow-heavy, API/data/security/UI/algorithmic, or 5+ R-ID source conversion. If unavailable, record the blocker and narrow any claim.

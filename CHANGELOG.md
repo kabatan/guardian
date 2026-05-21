@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.0
+
+- Adds the explicit Guardian implementation permission gate to the distributed Codex profile and skills.
+- Adds blocked `/goal` stop guidance so agents report the blocker once instead of repeating the same status.
+- Adds user-facing plain-language guidance.
+- Updates Guardian artifact templates with Base Spec hierarchy, authority, cleanup, and docs lifecycle rules.
+- Adds reference docs for the detailed Guardian design and AI-created markdown lifecycle.
+- Keeps per-task Base Specs, Plans, evidence logs, and release-work artifacts out of the distribution.
+
 ## v0.1.1
 
 - Clarifies the canonical public repository URL in install documentation.

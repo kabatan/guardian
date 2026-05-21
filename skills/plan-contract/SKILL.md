@@ -12,6 +12,7 @@ Before implementation, verify:
 5. OPEN high-impact QuestionDebt blocks dependent tasks, R-IDs, MECHs, readiness labels, and claims.
 6. Support/foundation work cannot close Must R-IDs or imply readiness.
 7. Each task has type, acceptance, verification, required TDD/debug evidence or not-applicable/waiver reason, forbidden shortcuts, allowed claim, and review checkpoint.
+8. The user explicitly approved implementation of the current Base Spec and Plan after seeing them.
 
 Task types: routine, MECH, milestone, boundary, support-only.
 
@@ -19,3 +20,4 @@ MECH completion, high-risk milestone, final claim, source-fidelity challenge, an
 
 If plan no longer fits Base Spec, stop and state the smallest needed plan or Base Spec change.
 
+If implementation permission is missing or ambiguous, stop and ask in plain language. Reviewer PASS or a broad earlier request is not permission.

@@ -23,3 +23,4 @@ Use `guardian_boundary_reviewer` for source conversion, Plan admission, MECH com
 
 Recovery: stop broad coding, read ACTIVE_CONTEXT, Base Spec, Plan/current task, current goal text, last evidence, and boundary blockers. Resume only the current task or claim.
 
+If recovery cannot progress without user input or an external change, report the needed decision/action once in plain language and wait. A goal-gate refusal to mark blocked is not permission to repeat the same report or claim completion.

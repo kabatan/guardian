@@ -10,9 +10,11 @@ Use Guardian Lane when work is long-running, spec-heavy, security/privacy/data-s
 2. Classify source units: EXACT, ADAPTED, PARTIAL, OUT_OF_SCOPE, REFERENCE_ONLY, QUESTION, NON_REQUIREMENT.
 3. High-impact QUESTION blocks dependent work, readiness, and strong claims.
 4. Plan against the Approved Base Spec with R-IDs, MECHs, blockers, acceptance, verification, allowed claims, and review checkpoints.
-5. Base Spec defines correctness. Plan defines implementation. If they conflict, Plan loses.
-6. Execute admitted plans under `/goal`. Inspect goal state before create/resume; do not treat `update_goal(status=complete)` as clear.
-7. Resume stale work from `ACTIVE_CONTEXT.md`, current Plan task, evidence, and Base Spec. Summaries and handoffs are indexes, not authority.
+5. Before implementation, show or summarize the current Base Spec and Plan and get explicit user permission. Drafts, broad prior requests, or reviewer PASS do not authorize implementation.
+6. Base Spec defines correctness. Plan defines implementation. If they conflict, Plan loses.
+7. Execute admitted plans under `/goal`. Inspect goal state before create/resume; do not treat `update_goal(status=complete)` as clear.
+8. If productive work is blocked, record the blocker, try only bounded recovery, ask the user once for the needed decision/action, and stop repeating the same blocked report even if the goal gate refuses blocked/completion.
+9. Resume stale work from `ACTIVE_CONTEXT.md`, current Plan task, evidence, and Base Spec. Summaries and handoffs are indexes, not authority.
 
 MECH is required only when an R-ID depends on a core mechanism in algorithms, discovery/search, scoring/selection/filtering, verification/exactification, public APIs, data/security/privacy, persistence/migration, UI state machines, or source-defined workflows.
 
@@ -27,4 +29,10 @@ Use `guardian_boundary_reviewer` for Base Spec admission, Approval Packet, Plan 
 Use `spec_verifier` after implementation to check changed files against assigned R-IDs. Use `quality_reviewer` only after spec review passes. Reviewers never mark R-IDs VERIFIED.
 
 Completion needs fresh evidence for the exact claim, including verification output and git state or an explicit non-git fallback.
+
+Use plain language in user-facing reports and questions. Internal terms are fine in Base Spec, Plan, and evidence, but explain them or avoid them when talking to the user.
+
+Keep always-read instructions short. Put detailed policy in `docs/ai`; classify new AI-created markdown by purpose, status, and authority, and keep active indexes pointed at current docs.
+
+Detailed target design: `docs/codex-guardian-final-spec.md` in the guardian repository.
 

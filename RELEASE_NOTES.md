@@ -1,21 +1,22 @@
-# guardian v0.1.1
+# guardian v0.2.0
 
-Follow-up public alpha release aligning the latest release with the improved `main`
-distribution docs, CI matrix, and safe install guidance.
+Public alpha release that publishes the updated Guardian runtime contract and documentation hygiene rules.
 
 ## Highlights
 
-- Uses the canonical public repository URL `https://github.com/kabatan/guardian.git`.
-- Puts installer `--dry-run` before the mutating install command.
-- Adds the Guardian minimal usage example and glossary.
-- Expands compatibility, model-access, release-trust, and security reporting guidance.
-- Expands CI to Ubuntu, macOS, and Windows across Python 3.9, 3.10, 3.11, and 3.12.
-- Updates GitHub Actions to `actions/checkout@v6.0.2` and `actions/setup-python@v6.2.0`.
+- Adds an explicit user permission gate before Guardian implementation starts.
+- Clarifies that blocked `/goal` execution should report the needed decision once and stop repeating the same blocked status.
+- Requires plain language in user-facing reports and questions while allowing Guardian terms inside artifacts.
+- Updates Guardian skills and the Codex profile with the new Base Spec / Plan permission boundary.
+- Expands artifact templates with Repo -> Area -> Change Base Spec hierarchy, authority rules, cleanup rules, and AI-created markdown lifecycle requirements.
+- Adds reference docs for the detailed Guardian design and docs lifecycle policy.
+
+This release intentionally does not ship per-task Base Specs, Plans, evidence logs, or release-work artifacts.
 
 ## Install
 
 ```bash
-git clone --branch v0.1.1 https://github.com/kabatan/guardian.git ~/.codex/guardian
+git clone --branch v0.2.0 https://github.com/kabatan/guardian.git ~/.codex/guardian
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy --dry-run
 python ~/.codex/guardian/scripts/install.py --agents-mode merge --install-mode copy
 python ~/.codex/guardian/scripts/doctor.py

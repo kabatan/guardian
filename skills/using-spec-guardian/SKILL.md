@@ -11,10 +11,12 @@ Guardian Lane order:
 
 1. Convert source or intent with `base-spec-gate`.
 2. Plan with `plan-contract`.
-3. Execute admitted plans with `goal-guardian-execution`.
-4. Use `closure-recovery` before readiness, verified, complete, source-faithful, or recovery claims.
+3. Ask the user for explicit permission to implement the current Base Spec and Plan.
+4. Execute admitted and explicitly approved plans with `goal-guardian-execution`.
+5. Use `closure-recovery` before readiness, verified, complete, source-faithful, or recovery claims.
 
 Use `guardian_boundary_reviewer` for Base Spec admission, Approval Packet, Plan admission, MECH completion, final strong claims, source-fidelity challenges, and recovery. Use `spec_verifier` and `quality_reviewer` only at their implementation review checkpoints.
 
 After Base Spec approval, do not reinterpret Original Source except for conversion review, source-fidelity challenge, discovered gap, contradiction, or exact source-dependent claim.
 
+Use plain language in user-facing updates and questions. Keep Guardian shorthand inside artifacts or explain it briefly.

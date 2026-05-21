@@ -18,4 +18,3 @@ Resume:
 2. Treat handoff as an index only.
 3. If handoff conflicts with Base Spec, Plan, or evidence, the authoritative artifact wins.
 4. Resume only the current task or claim.
-
