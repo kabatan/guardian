@@ -2,6 +2,21 @@
 
 Detailed templates live here so agent-read instructions can stay compact.
 
+Use the focused companion templates in this directory when a task needs them:
+
+- `implementation-permission.md`
+- `readset.md`
+- `evidence-lite.md`
+- `evidence-full.jsonl.example`
+- `claim-matrix.md`
+- `read-ledger.md`
+- `docs-frontmatter.md`
+- `source-safety-classification.md`
+- `verification-oracle.md`
+- `plan-change-cleanup.md`
+- `deletion-safety-checklist.md`
+- `research-protocol.md`
+
 ## Base Spec
 
 Required sections: Context Packet, purpose, source scope, requirements, approved exceptions, adaptations, exclusions, QuestionDebt, MECHs, acceptance, verification, forbidden simplifications, approval status.
@@ -126,12 +141,17 @@ Record exact claim, R-ID evidence, execution-discipline evidence, verification o
 
 ## AI-Created Markdown
 
-Every new Guardian markdown artifact must declare:
+Every new Guardian markdown artifact must declare frontmatter equivalent to `docs-frontmatter.md`:
 
-- purpose,
-- status,
-- authority: authority | plan | index | evidence | history | reference,
-- owner/current spec,
-- read conditions.
+- `guardian_doc: true`
+- `status`
+- `authority`
+- `owner`
+- `origin`
+- `delete_policy`
+
+Use `delete_policy`, not `safe_delete_default`.
 
 Active indexes should point to current docs. Closed or stale docs should be marked non-authority, archived under the relevant change, or left only as evidence/history.
+
+Default Lane creates no Guardian artifacts by default. Guardian Lane uses minimum artifacts plus conditional add-ons. Strong claims require fresh full-output-backed evidence, claim ceilings, and required review.

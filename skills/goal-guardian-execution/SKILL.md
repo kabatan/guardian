@@ -1,7 +1,23 @@
 ---
 name: goal-guardian-execution
-description: Execute an Approved Base Spec under /goal with parent implementation and boundary reviews.
+description: Use after an approved Base Spec, admitted Plan, and scoped user permission exist, to execute Guardian Lane work under /goal.
 ---
+
+## Direct Invocation Guard
+
+This phase skill is normally called by `using-spec-guardian`.
+
+Required preconditions: approved Base Spec, admitted Plan, and scoped implementation permission.
+
+If any precondition is missing:
+
+- do not continue by guessing
+- state the missing prerequisite
+- route back to `plan-contract` or the permission gate
+- do not implement code
+- do not create a strong claim
+
+## Execution Loop
 
 Use only after Approved Base Spec, admitted Plan, and explicit user permission to implement that current Plan exist.
 

@@ -1,7 +1,23 @@
 ---
 name: plan-contract
-description: Check planned non-Micro work before coding against an Approved Base Spec.
+description: Use after an active Base Spec exists and before implementation, when a plan must preserve requirements, blockers, evidence, scope, and claim ceiling.
 ---
+
+## Direct Invocation Guard
+
+This phase skill is normally called by `using-spec-guardian`.
+
+Required precondition: active Approved Base Spec.
+
+If the precondition is missing:
+
+- do not continue by guessing
+- state the missing prerequisite
+- route back to `base-spec-gate`
+- do not implement code
+- do not create a strong claim
+
+## Plan Check
 
 Before implementation, verify:
 

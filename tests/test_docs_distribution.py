@@ -18,10 +18,10 @@ class DistributionDocsTests(unittest.TestCase):
         release_notes = read_repo("RELEASE_NOTES.md")
         version = read_repo("VERSION")
 
-        self.assertEqual(version.strip(), "0.2.0")
-        self.assertIn("guardian v0.2.0", release_notes)
-        self.assertIn("--branch v0.2.0", readme)
-        self.assertIn("--branch v0.2.0", release_notes)
+        self.assertEqual(version.strip(), "0.3.0")
+        self.assertIn("guardian v0.3.0", release_notes)
+        self.assertIn("--branch v0.3.0", readme)
+        self.assertIn("--branch v0.3.0", release_notes)
 
     def test_install_examples_use_canonical_repo_url(self) -> None:
         readme = read_repo("README.md")
@@ -35,7 +35,7 @@ class DistributionDocsTests(unittest.TestCase):
     def test_update_example_does_not_reference_old_unpublished_example(self) -> None:
         readme = read_repo("README.md")
 
-        self.assertNotIn("git checkout v0.2.0", readme)
+        self.assertNotIn("git checkout v0.3.0", readme)
         self.assertIn("git checkout <new-version>", readme)
 
     def test_first_install_flow_runs_dry_run_before_install(self) -> None:
@@ -121,23 +121,42 @@ class DistributionDocsTests(unittest.TestCase):
         self.assertIn("actions/setup-python@v6.2.0", workflow)
 
 
-    def test_guardian_runtime_contract_includes_v020_guardrails(self) -> None:
+    def test_guardian_runtime_contract_includes_v030_guardrails(self) -> None:
         profile = read_repo("profiles/codex/AGENTS.md")
         using_skill = read_repo("skills/using-spec-guardian/SKILL.md")
         goal_skill = read_repo("skills/goal-guardian-execution/SKILL.md")
         plan_skill = read_repo("skills/plan-contract/SKILL.md")
 
         for phrase in (
-            "get explicit user permission",
-            "Drafts, broad prior requests, or reviewer PASS do not authorize implementation",
-            "stop repeating the same blocked report",
-            "Use plain language in user-facing reports and questions",
+            "Default Lane is for routine narrow work",
+            "Use Guardian Lane only for hard triggers",
+            "Get scoped user implementation permission before editing",
+            "reviewer PASS as authority or executable proof",
+            "delete user-created or untracked files",
+            "without explicit authorization",
         ):
             self.assertIn(phrase, profile)
 
-        self.assertIn("explicit permission to implement the current Base Spec and Plan", using_skill)
+        self.assertIn("Ask for permission to implement the current Base Spec and Plan", using_skill)
         self.assertIn("If `update_goal(status=blocked)` is rejected", goal_skill)
         self.assertIn("Reviewer PASS or a broad earlier request is not permission", plan_skill)
+
+    def test_phase_skills_ship_direct_invocation_metadata(self) -> None:
+        phase_skills = (
+            "base-spec-gate",
+            "plan-contract",
+            "goal-guardian-execution",
+            "closure-recovery",
+            "guardian-session-handoff",
+        )
+        for skill in phase_skills:
+            body = read_repo(f"skills/{skill}/SKILL.md")
+            metadata = read_repo(f"skills/{skill}/agents/openai.yaml")
+            self.assertIn("## Direct Invocation Guard", body)
+            self.assertIn("Required precondition", body)
+            self.assertIn("allow_implicit_invocation: false", metadata)
+
+        self.assertFalse((ROOT / "skills" / "using-spec-guardian" / "agents" / "openai.yaml").exists())
 
     def test_artifact_templates_and_docs_lifecycle_are_shipped(self) -> None:
         template = read_repo("templates/guardian/project-artifacts.md")
@@ -149,11 +168,29 @@ class DistributionDocsTests(unittest.TestCase):
             "Repo -> Area -> Change",
             "Active Base Spec R-IDs and approved exception records are authority",
             "Allowed edit types: ADD, UPDATE, REMOVE, SUPERSEDE",
-            "Every new Guardian markdown artifact must declare",
+            "Every new Guardian markdown artifact must declare frontmatter",
         ):
             self.assertIn(phrase, template)
 
-        self.assertIn("New AI-created markdown must state", lifecycle)
+        for path in (
+            "implementation-permission.md",
+            "readset.md",
+            "evidence-lite.md",
+            "evidence-full.jsonl.example",
+            "claim-matrix.md",
+            "read-ledger.md",
+            "docs-frontmatter.md",
+            "source-safety-classification.md",
+            "verification-oracle.md",
+            "plan-change-cleanup.md",
+            "deletion-safety-checklist.md",
+            "research-protocol.md",
+        ):
+            self.assertTrue((ROOT / "templates" / "guardian" / path).exists())
+
+        self.assertIn("guardian_doc: true", lifecycle)
+        self.assertIn("delete_policy: never | archive_preferred | generated_temp_only", lifecycle)
+        self.assertNotIn("safe_delete_default:", lifecycle)
         self.assertIn("Implementation Permission Gate", final_spec)
         self.assertIn("docs/docs-lifecycle.md", readme)
 

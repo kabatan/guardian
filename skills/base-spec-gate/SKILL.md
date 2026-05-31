@@ -1,9 +1,25 @@
 ---
 name: base-spec-gate
-description: Convert Original Source and user intent into an Approved Base Spec before Guardian implementation.
+description: Use after a user-provided source/spec/research plan or high-risk intent needs conversion into Base Spec authority before implementation.
 ---
 
-Original Source is reference. Approved Base Spec is authority after approval.
+## Direct Invocation Guard
+
+This phase skill is normally called by `using-spec-guardian`.
+
+Required precondition: user-provided source/spec/research plan or high-risk intent.
+
+If the precondition is missing:
+
+- do not continue by guessing
+- state the missing prerequisite
+- route back to `using-spec-guardian`
+- do not implement code
+- do not create a strong claim
+
+## Output
+
+Produce a Base Spec draft and Approval Packet. Original Source is reference. Approved Base Spec becomes authority only after user approval.
 
 Classify each normative source unit: EXACT, ADAPTED, PARTIAL, OUT_OF_SCOPE, REFERENCE_ONLY, QUESTION, NON_REQUIREMENT.
 
@@ -16,3 +32,5 @@ Before approval, provide an Approval Packet covering QUESTION, ADAPTED, PARTIAL,
 Base Spec approval is not implementation permission. After Plan admission, ask the user explicitly before coding or editing implementation files.
 
 Use `guardian_boundary_reviewer` for dense, workflow-heavy, API/data/security/UI/algorithmic, or 5+ R-ID source conversion. If unavailable, record the blocker and narrow any claim.
+
+Stop when source authority is ambiguous, high-impact QuestionDebt is open, or the user must decide a conversion choice.

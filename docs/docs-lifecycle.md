@@ -1,38 +1,47 @@
 # Guardian Docs Lifecycle
 
-This file is policy reference, not authority. Active Base Spec R-IDs and approved exception records remain authority.
+This file is policy reference, not per-task authority. Active Base Spec R-IDs and
+approved exception records remain authority.
 
-## Classes
+## Frontmatter
 
-| Class | Examples | Authority |
-|---|---|---|
-| authority | Base Spec active R-IDs, approved exception records | yes |
-| plan | Plan, task list | implementation only |
-| index | SPEC_REGISTRY, ACTIVE_CONTEXT, SESSION_HANDOFF, REPO_MAP | no |
-| evidence | logs, verification output, review packets | evidence only |
-| history | CHANGELOG, DECISIONS, archived specs | no |
-| reference | final design docs, guides, old discussion summaries | no |
+New Guardian-created Markdown should use:
 
-## Required Header
-
-New AI-created markdown must state:
-
-```md
-Purpose:
-Status:
-Authority:
-Owner/current spec:
-Read when:
+```yaml
+---
+guardian_doc: true
+status: active | closed | archived | evidence | scratch
+authority: normative | execution-control | evidence | navigation | history
+owner: guardian | user | mixed
+origin: generated | copied-from-user | edited-by-user | external
+delete_policy: never | archive_preferred | generated_temp_only
+---
 ```
+
+Do not use `safe_delete_default`.
+
+## Delete Policy
+
+- `never`: default for user, mixed, copied, external, normative, history, and evidence docs. Deletion requires explicit user authorization.
+- `archive_preferred`: generated but potentially useful historical/provenance docs. Archive before deletion unless the user explicitly asks deletion.
+- `generated_temp_only`: temporary Guardian-generated scratch artifacts. Delete only when in current task scope and unreferenced by active artifacts.
 
 ## Lifecycle
 
-- Keep active docs current and short.
-- Do not copy old versions into active Base Spec bodies.
-- Move old rationale, superseded text, and decisions to history files.
-- At closure, update indexes and mark stale docs as closed, superseded, archival, or evidence.
-- If a doc's authority is unclear, treat it as non-authority until an active Base Spec says otherwise.
+- Active docs must be few and current.
+- Closed or superseded docs move out of read-first paths.
+- Archive docs are cold context, not hot context.
+- `ACTIVE_CONTEXT.md` contains pointers and current decisions, not copied requirements.
+- Keep `ACTIVE_CONTEXT.md` at <=60 logical lines target, 80 line hard max, and <=4,000 chars.
+- Full Base Spec duplication in `ACTIVE_CONTEXT.md` is not allowed.
+
+## Docs Lint Rollout
+
+- P0/P1: warn-only for existing docs, strict only for changed Guardian-generated docs.
+- P2+: baseline mode for existing docs; strict profile may fail lifecycle violations.
 
 ## Read Rule
 
-Read active authority first, then the current Plan task, then indexes/evidence as needed. Do not read broad history unless a boundary review, recovery, source-fidelity question, or contradiction requires it.
+Read active authority first, then the current Plan task, then indexes/evidence as needed.
+Do not read broad history unless a boundary review, recovery, source-fidelity question,
+or contradiction requires it.

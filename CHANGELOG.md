@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.0
+
+- Tightens the distributed Guardian runtime contract around Default Lane, Guardian Lane triggers, scoped permission, ReadSet, evidence, source quarantine, deletion safety, and reviewer claim limits.
+- Hardens phase-skill invocation with direct invocation guards and `agents/openai.yaml` metadata that disables implicit invocation for phase skills.
+- Adds focused Guardian templates for implementation permission, ReadSet, evidence records, claim matrices, read ledgers, docs frontmatter, source-safety classification, verification oracles, plan cleanup, deletion safety, and research protocol support.
+- Updates docs lifecycle guidance to use structured Guardian frontmatter and `delete_policy` semantics instead of `safe_delete_default`.
+- Keeps per-task Base Specs, Plans, evidence logs, active context indexes, local install locks, and release-work artifacts out of the distribution.
+
 ## v0.2.0
 
 - Adds the explicit Guardian implementation permission gate to the distributed Codex profile and skills.

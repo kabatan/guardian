@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "EV-20260531-001",
+  "kind": "test",
+  "command": "pytest tests/search/test_scoring.py -q",
+  "cwd": ".",
+  "exit_code": 0,
+  "started_at": "2026-05-31T00:00:00Z",
+  "duration_s": 12.4,
+  "timeout_s": 120,
+  "full_output": "docs/ai/changes/change-id/evidence/test-r07-001.txt",
+  "full_output_sha256": "...",
+  "slice": "L12-L28",
+  "git_head": "...",
+  "git_status_porcelain": "...",
+  "diff_hash": "...",
+  "env": {
+    "python": "3.12.x",
+    "node": "22.x",
+    "os": "windows"
+  },
+  "redaction": {
+    "applied": false,
+    "patterns": [],
+    "sensitive_output": false
+  },
+  "supports": ["R-07", "MECH-02"],
+  "dependency_runtime_metadata": {},
+  "claim_ceiling": "TARGETED_TESTS_PASS_FOR_R-07_MECH_PATH"
+}

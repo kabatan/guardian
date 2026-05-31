@@ -1,7 +1,23 @@
 ---
 name: closure-recovery
-description: Gate final claims and recover from stale state, goal continuation, source-fidelity challenge, or drift.
+description: Use when a current task, claim under review, evidence target, stale state, source-fidelity challenge, or recovery path must be checked before a strong claim.
 ---
+
+## Direct Invocation Guard
+
+This phase skill is normally called by `using-spec-guardian`.
+
+Required precondition: current task, claim under review, evidence target, or recovery/resume state.
+
+If the precondition is missing:
+
+- do not continue by guessing
+- state the missing artifact or claim target
+- route back to `using-spec-guardian` or the prior required phase
+- do not implement code
+- do not create a strong claim
+
+## Claim Gate
 
 Before readiness, complete, verified, or source-faithful claims, check:
 
